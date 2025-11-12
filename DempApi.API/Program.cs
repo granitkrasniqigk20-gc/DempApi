@@ -13,7 +13,7 @@ builder.Services.AddSwaggerGen();
 
 // Configure Database
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Register Repositories
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
@@ -25,11 +25,34 @@ builder.Services.AddScoped<IPositionService, PositionService>();
 
 var app = builder.Build();
 
-// Apply migrations and seed data
+// Database Migration and Update Configuration
+// Comment/Uncomment the sections below as needed
 using (var scope = app.Services.CreateScope())
 {
-    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    db.Database.EnsureCreated();
+    var services = scope.ServiceProvider;
+    var context = services.GetRequiredService<ApplicationDbContext>();
+    
+    try
+    {
+        // OPTION 1: Delete database and recreate (for development/testing)
+        // Uncomment to delete and recreate database on every startup
+        // await context.Database.EnsureDeletedAsync();
+        // await context.Database.EnsureCreatedAsync();
+        
+        // OPTION 2: Apply pending migrations automatically (Recommended for production)
+        // Uncomment to automatically apply migrations
+        await context.Database.MigrateAsync();
+        
+        // OPTION 3: Just ensure database exists (no migrations)
+        // Uncomment to only create database if it doesn't exist
+        // await context.Database.EnsureCreatedAsync();
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred while migrating or initializing the database.");
+        throw;
+    }
 }
 
 // Configure the HTTP request pipeline.

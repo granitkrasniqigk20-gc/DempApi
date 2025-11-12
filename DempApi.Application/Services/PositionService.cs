@@ -21,7 +21,7 @@ public class PositionService : IPositionService
             Id = p.Id,
             Title = p.Title,
             Description = p.Description,
-            IsActive = p.IsActive
+            Deleted = p.Deleted
         });
     }
 
@@ -35,7 +35,7 @@ public class PositionService : IPositionService
             Id = position.Id,
             Title = position.Title,
             Description = position.Description,
-            IsActive = position.IsActive
+            Deleted = position.Deleted
         };
     }
 
@@ -45,8 +45,9 @@ public class PositionService : IPositionService
         {
             Title = createDto.Title,
             Description = createDto.Description,
-            IsActive = true,
-            CreatedAt = DateTime.UtcNow
+            InsertedById = createDto.InsertedById,
+            InsertedDate = DateTime.UtcNow,
+            Deleted = false
         };
 
         var created = await _positionRepository.AddAsync(position);
@@ -56,7 +57,7 @@ public class PositionService : IPositionService
             Id = created.Id,
             Title = created.Title,
             Description = created.Description,
-            IsActive = created.IsActive
+            Deleted = created.Deleted
         };
     }
 
@@ -68,8 +69,9 @@ public class PositionService : IPositionService
 
         position.Title = updateDto.Title;
         position.Description = updateDto.Description;
-        position.IsActive = updateDto.IsActive;
-        position.UpdatedAt = DateTime.UtcNow;
+        position.Deleted = updateDto.Deleted;
+        position.UpdatedById = updateDto.UpdatedById;
+        position.UpdatedDate = DateTime.UtcNow;
 
         await _positionRepository.UpdateAsync(position);
     }

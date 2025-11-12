@@ -32,7 +32,7 @@ public class EmployeeService : IEmployeeService
             PhoneNumber = e.PhoneNumber,
             DateOfBirth = e.DateOfBirth,
             HireDate = e.HireDate,
-            IsActive = e.IsActive,
+            Deleted = e.Deleted,
             DepartmentId = e.DepartmentId,
             DepartmentName = e.Department?.Name ?? string.Empty,
             PositionId = e.PositionId,
@@ -54,7 +54,7 @@ public class EmployeeService : IEmployeeService
             PhoneNumber = employee.PhoneNumber,
             DateOfBirth = employee.DateOfBirth,
             HireDate = employee.HireDate,
-            IsActive = employee.IsActive,
+            Deleted = employee.Deleted,
             DepartmentId = employee.DepartmentId,
             DepartmentName = employee.Department?.Name ?? string.Empty,
             PositionId = employee.PositionId,
@@ -74,8 +74,9 @@ public class EmployeeService : IEmployeeService
             HireDate = createDto.HireDate,
             DepartmentId = createDto.DepartmentId,
             PositionId = createDto.PositionId,
-            IsActive = true,
-            CreatedAt = DateTime.UtcNow
+            InsertedById = createDto.InsertedById,
+            InsertedDate = DateTime.UtcNow,
+            Deleted = false
         };
 
         var created = await _employeeRepository.AddAsync(employee);
@@ -91,7 +92,7 @@ public class EmployeeService : IEmployeeService
             PhoneNumber = created.PhoneNumber,
             DateOfBirth = created.DateOfBirth,
             HireDate = created.HireDate,
-            IsActive = created.IsActive,
+            Deleted = created.Deleted,
             DepartmentId = created.DepartmentId,
             DepartmentName = department?.Name ?? string.Empty,
             PositionId = created.PositionId,
@@ -111,10 +112,11 @@ public class EmployeeService : IEmployeeService
         employee.PhoneNumber = updateDto.PhoneNumber;
         employee.DateOfBirth = updateDto.DateOfBirth;
         employee.HireDate = updateDto.HireDate;
-        employee.IsActive = updateDto.IsActive;
+        employee.Deleted = updateDto.Deleted;
         employee.DepartmentId = updateDto.DepartmentId;
         employee.PositionId = updateDto.PositionId;
-        employee.UpdatedAt = DateTime.UtcNow;
+        employee.UpdatedById = updateDto.UpdatedById;
+        employee.UpdatedDate = DateTime.UtcNow;
 
         await _employeeRepository.UpdateAsync(employee);
     }

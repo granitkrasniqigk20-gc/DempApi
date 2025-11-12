@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DempApi.Infrastructure.Repositories;
 
-public class Repository<T> : IRepository<T> where T : BaseEntity
+public class Repository<T> : IRepository<T> where T : class, IBaseEntity
 {
     private readonly ApplicationDbContext _context;
     private readonly DbSet<T> _dbSet;
@@ -65,10 +65,14 @@ public class Repository<T> : IRepository<T> where T : BaseEntity
 
     public async Task DeleteAsync(int id)
     {
-        var entity = await _dbSet.FindAsync(id);
+        // Use IgnoreQueryFilters to find the entity even if it's already deleted
+        var entity = await _dbSet.IgnoreQueryFilters().FirstOrDefaultAsync(e => e.Id == id);
         if (entity != null)
         {
-            _dbSet.Remove(entity);
+            // Soft delete: set Deleted flag to true instead of removing
+            entity.Deleted = true;
+            entity.UpdatedDate = DateTime.UtcNow;
+            _dbSet.Update(entity);
             await _context.SaveChangesAsync();
         }
     }

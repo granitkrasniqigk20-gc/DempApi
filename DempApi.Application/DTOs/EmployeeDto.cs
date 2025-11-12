@@ -9,7 +9,7 @@ public class EmployeeDto
     public string PhoneNumber { get; set; } = string.Empty;
     public DateTime DateOfBirth { get; set; }
     public DateTime HireDate { get; set; }
-    public bool IsActive { get; set; }
+    public bool Deleted { get; set; }
     public int DepartmentId { get; set; }
     public string DepartmentName { get; set; } = string.Empty;
     public int PositionId { get; set; }
@@ -26,6 +26,7 @@ public class CreateEmployeeDto
     public DateTime HireDate { get; set; }
     public int DepartmentId { get; set; }
     public int PositionId { get; set; }
+    public int InsertedById { get; set; }
 }
 
 public class UpdateEmployeeDto
@@ -36,7 +37,8 @@ public class UpdateEmployeeDto
     public string PhoneNumber { get; set; } = string.Empty;
     public DateTime DateOfBirth { get; set; }
     public DateTime HireDate { get; set; }
-    public bool IsActive { get; set; }
+    public bool Deleted { get; set; }
     public int DepartmentId { get; set; }
     public int PositionId { get; set; }
+    public int UpdatedById { get; set; }
 }

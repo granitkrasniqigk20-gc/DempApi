@@ -18,15 +18,12 @@ public class ApplicationDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        // Employee configuration
+        // Apply global query filter for soft delete
+        ApplyGlobalQueryFilters(modelBuilder);
+
+        // Employee configuration - only relationships and what can't be done with attributes
         modelBuilder.Entity<Employee>(entity =>
         {
-            entity.HasKey(e => e.Id);
-            entity.Property(e => e.FirstName).IsRequired().HasMaxLength(100);
-            entity.Property(e => e.LastName).IsRequired().HasMaxLength(100);
-            entity.Property(e => e.Email).IsRequired().HasMaxLength(255);
-            entity.Property(e => e.PhoneNumber).HasMaxLength(20);
-
             entity.HasOne(e => e.Department)
                 .WithMany(d => d.Employees)
                 .HasForeignKey(e => e.DepartmentId)
@@ -38,34 +35,42 @@ public class ApplicationDbContext : DbContext
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
-        // Department configuration
-        modelBuilder.Entity<Department>(entity =>
-        {
-            entity.HasKey(d => d.Id);
-            entity.Property(d => d.Name).IsRequired().HasMaxLength(200);
-            entity.Property(d => d.Description).HasMaxLength(500);
-        });
-
-        // Position configuration
-        modelBuilder.Entity<Position>(entity =>
-        {
-            entity.HasKey(p => p.Id);
-            entity.Property(p => p.Title).IsRequired().HasMaxLength(200);
-            entity.Property(p => p.Description).HasMaxLength(500);
-        });
-
         // Seed data
+        SeedData(modelBuilder);
+    }
+
+    private void ApplyGlobalQueryFilters(ModelBuilder modelBuilder)
+    {
+        // Apply global query filter for all entities implementing IBaseEntity
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            if (typeof(IBaseEntity).IsAssignableFrom(entityType.ClrType))
+            {
+                var parameter = System.Linq.Expressions.Expression.Parameter(entityType.ClrType, "e");
+                var property = System.Linq.Expressions.Expression.Property(parameter, nameof(IBaseEntity.Deleted));
+                var filter = System.Linq.Expressions.Expression.Lambda(
+                    System.Linq.Expressions.Expression.Not(property), parameter);
+                
+                modelBuilder.Entity(entityType.ClrType).HasQueryFilter(filter);
+            }
+        }
+    }
+
+    private void SeedData(ModelBuilder modelBuilder)
+    {
         modelBuilder.Entity<Department>().HasData(
-            new Department { Id = 1, Name = "IT", Description = "Information Technology", IsActive = true, CreatedAt = DateTime.UtcNow },
-            new Department { Id = 2, Name = "HR", Description = "Human Resources", IsActive = true, CreatedAt = DateTime.UtcNow },
-            new Department { Id = 3, Name = "Finance", Description = "Finance Department", IsActive = true, CreatedAt = DateTime.UtcNow }
+            new Department { Id = 1, Name = "IT", Description = "Information Technology", InsertedById = 1, InsertedDate = DateTime.UtcNow, Deleted = false },
+            new Department { Id = 2, Name = "HR", Description = "Human Resources", InsertedById = 1, InsertedDate = DateTime.UtcNow, Deleted = false },
+            new Department { Id = 3, Name = "Finance", Description = "Finance Department", InsertedById = 1, InsertedDate = DateTime.UtcNow, Deleted = false },
+            new Department { Id = 4, Name = "Marketing", Description = "Marketing Department", InsertedById = 1, InsertedDate = DateTime.UtcNow.AddDays(-30) }
         );
 
         modelBuilder.Entity<Position>().HasData(
-            new Position { Id = 1, Title = "Software Engineer", Description = "Develops software", IsActive = true, CreatedAt = DateTime.UtcNow },
-            new Position { Id = 2, Title = "Senior Software Engineer", Description = "Senior developer", IsActive = true, CreatedAt = DateTime.UtcNow },
-            new Position { Id = 3, Title = "HR Manager", Description = "Manages HR", IsActive = true, CreatedAt = DateTime.UtcNow },
-            new Position { Id = 4, Title = "Accountant", Description = "Manages finances", IsActive = true, CreatedAt = DateTime.UtcNow }
+            new Position { Id = 1, Title = "Software Engineer", Description = "Develops software", InsertedById = 1, InsertedDate = DateTime.UtcNow, Deleted = false },
+            new Position { Id = 2, Title = "Senior Software Engineer", Description = "Senior developer", InsertedById = 1, InsertedDate = DateTime.UtcNow, Deleted = false },
+            new Position { Id = 3, Title = "HR Manager", Description = "Manages HR", InsertedById = 1, InsertedDate = DateTime.UtcNow, Deleted = false },
+            new Position { Id = 4, Title = "Accountant", Description = "Manages finances", InsertedById = 1, InsertedDate = DateTime.UtcNow, Deleted = false },
+            new Position { Id = 5, Title = "Marketing Manager", Description = "Manages marketing", InsertedById = 1, Deleted = true }
         );
     }
 }

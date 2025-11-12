@@ -21,7 +21,7 @@ public class DepartmentService : IDepartmentService
             Id = d.Id,
             Name = d.Name,
             Description = d.Description,
-            IsActive = d.IsActive
+            Deleted = d.Deleted
         });
     }
 
@@ -35,7 +35,7 @@ public class DepartmentService : IDepartmentService
             Id = department.Id,
             Name = department.Name,
             Description = department.Description,
-            IsActive = department.IsActive
+            Deleted = department.Deleted
         };
     }
 
@@ -45,8 +45,9 @@ public class DepartmentService : IDepartmentService
         {
             Name = createDto.Name,
             Description = createDto.Description,
-            IsActive = true,
-            CreatedAt = DateTime.UtcNow
+            InsertedById = createDto.InsertedById,
+            InsertedDate = DateTime.UtcNow,
+            Deleted = false
         };
 
         var created = await _departmentRepository.AddAsync(department);
@@ -56,7 +57,7 @@ public class DepartmentService : IDepartmentService
             Id = created.Id,
             Name = created.Name,
             Description = created.Description,
-            IsActive = created.IsActive
+            Deleted = created.Deleted
         };
     }
 
@@ -68,8 +69,9 @@ public class DepartmentService : IDepartmentService
 
         department.Name = updateDto.Name;
         department.Description = updateDto.Description;
-        department.IsActive = updateDto.IsActive;
-        department.UpdatedAt = DateTime.UtcNow;
+        department.Deleted = updateDto.Deleted;
+        department.UpdatedById = updateDto.UpdatedById;
+        department.UpdatedDate = DateTime.UtcNow;
 
         await _departmentRepository.UpdateAsync(department);
     }
